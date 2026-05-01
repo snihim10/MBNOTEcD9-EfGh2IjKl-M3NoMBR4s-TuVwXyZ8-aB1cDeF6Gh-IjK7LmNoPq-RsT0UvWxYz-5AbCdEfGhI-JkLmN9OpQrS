@@ -1,1353 +1,345 @@
 local Players = game:GetService("Players")
-local TextService = game:GetService("TextService")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 local localPlayer = Players.LocalPlayer
 if not localPlayer then
 	return
 end
 
-local PLAYER_GUI = localPlayer:WaitForChild("PlayerGui")
+local playerGui = localPlayer:FindFirstChildOfClass("PlayerGui") or localPlayer:WaitForChild("PlayerGui")
+
 local CREDIT_USER_ID = 9930783751
-local CREDIT_USERNAME = "CuongOutLook"
-local DISCORD_DM_URL = "https://discord.com/users/535824717785858059"
-local CREDIT_AVATAR_URL = "https://i.postimg.cc/sDLdpjTx/Picsart-26-04-14-06-54-03-382.jpg"
-local CREDIT_AVATAR_FILE = "CuongOutLook_credit_avatar.jpg"
-local LANGUAGE_FILE = "CuongOutLook_maintenance_lang.txt"
-local HEADER_SOURCE_URL = "https://raw.githubusercontent.com/ChauChiCuong/firstlua/refs/heads/main/Header.txt"
-local THEME_SOURCE_URL = "https://raw.githubusercontent.com/ChauChiCuong/firstlua/main/ThemeColor"
-local GUI_NAME = "CuongOutLookMaintenanceUI"
-local AMBIENT_COUNT = 14
-local DIGIT_COUNT = 18
-local digitPool = "COL0123456789@#"
-local SHOW_DIGIT_EFFECT = false
-local BASE_MAIN_WIDTH = 860
-local BASE_MAIN_HEIGHT = 430
-local TITLE_MAX_TEXT_SIZE = 21
-local TITLE_MIN_TEXT_SIZE = 11
 
-local TEXTS = {
-	en = {
-		windowTitle = "COL Loader",
-		maintenanceBadge = "MOBILE NOT SUPPORTED",
-		maintenanceTitle = "This script is not supported on Mobile",
-		maintenanceBody = "The current version is only available on supported PC executors.",
-		maintenanceNote = "Mobile support will be added soon and will stay unavailable until a new notice is posted.",
-		creatorTitle = "Creator",
-		creatorSubtitle = "Official profile",
-		creatorUser = "Script Owner: CuongOutLook",
-		creatorTag = "Builder of COL",
-		discordCopy = "Copy Discord DM Link",
-		discordCopied = "Discord link copied",
-		discordCopyFailed = "Clipboard unavailable",
-		statusTitle = "Device status",
-		statusLine1 = "Mobile devices are not supported yet",
-		statusLine2 = "Mobile support is planned for a future update",
-		statusLine3 = "Please wait for a new announcement",
-		rejoin = "Understood",
-		close = "Close",
-		rejoining = "Closing notice...",
-		rejoinFailed = "Unable to close this notice.",
-		closeHint = "Run the loadstring again if you want to reopen this notice.",
-		footer = "Thanks for waiting for the next update.",
-	},
-	vi = {
-		windowTitle = "COL Loader",
-		maintenanceBadge = "MOBILE CHƯA HỖ TRỢ",
-		maintenanceTitle = "Script này hiện chưa hỗ trợ Mobile",
-		maintenanceBody = "Phiên bản hiện tại chỉ hoạt động trên các executor PC được hỗ trợ.",
-		maintenanceNote = "Hỗ trợ Mobile sẽ sớm được thêm vào và tạm thời vẫn chưa khả dụng cho đến khi có thông báo mới.",
-		creatorTitle = "Creator",
-		creatorSubtitle = "Hồ sơ chính thức",
-		creatorUser = "Chủ Script: CuongOutLook",
-		creatorTag = "Người xây dựng COL",
-		discordCopy = "Copy Link Discord DM",
-		discordCopied = "Đã copy link Discord",
-		discordCopyFailed = "Không hỗ trợ clipboard",
-		statusTitle = "Trạng thái thiết bị",
-		statusLine1 = "Thiết bị Mobile hiện chưa được hỗ trợ",
-		statusLine2 = "Bản hỗ trợ Mobile sẽ được thêm trong bản cập nhật sau",
-		statusLine3 = "Vui lòng chờ thông báo mới",
-		rejoin = "Đã hiểu",
-		close = "Đóng",
-		rejoining = "Đang đóng thông báo...",
-		rejoinFailed = "Không thể đóng thông báo này.",
-		closeHint = "Bạn có thể mở lại thông báo bằng cách chạy loadstring lần nữa.",
-		footer = "Cảm ơn bạn đã chờ bản cập nhật mới.",
-	},
-	jp = {
-		windowTitle = "COL Loader",
-		maintenanceBadge = "MOBILE 未対応",
-		maintenanceTitle = "このスクリプトは現在 Mobile に対応していません",
-		maintenanceBody = "現在のバージョンは対応している PC executor でのみ利用できます。",
-		maintenanceNote = "Mobile 対応は今後追加予定です。新しいお知らせがあるまで利用できません。",
-		creatorTitle = "Creator",
-		creatorSubtitle = "公式プロフィール",
-		creatorUser = "スクリプトオーナー: CuongOutLook",
-		creatorTag = "COL の開発者",
-		discordCopy = "Discord DMリンクをコピー",
-		discordCopied = "Discordリンクをコピーしました",
-		discordCopyFailed = "クリップボードは使えません",
-		statusTitle = "デバイス状態",
-		statusLine1 = "Mobile 端末はまだサポートされていません",
-		statusLine2 = "Mobile 対応は今後のアップデートで追加予定です",
-		statusLine3 = "新しいお知らせをお待ちください",
-		rejoin = "了解",
-		close = "閉じる",
-		rejoining = "お知らせを閉じています...",
-		rejoinFailed = "このお知らせを閉じられません。",
-		closeHint = "再度開くには loadstring をもう一度実行してください。",
-		footer = "次のアップデートまでお待ちください。",
-	},
+local guiName = "COLMobileUnsupportedUI"
+local existingGui = playerGui:FindFirstChild(guiName)
+if existingGui then
+	existingGui:Destroy()
+end
+
+local palette = {
+	backgroundTop = Color3.fromRGB(10, 14, 22),
+	backgroundBottom = Color3.fromRGB(2, 6, 14),
+	panel = Color3.fromRGB(13, 20, 31),
+	panelStroke = Color3.fromRGB(78, 126, 255),
+	badge = Color3.fromRGB(255, 155, 60),
+	badgeText = Color3.fromRGB(34, 20, 4),
+	primaryText = Color3.fromRGB(245, 248, 255),
+	secondaryText = Color3.fromRGB(166, 179, 204),
+	accent = Color3.fromRGB(110, 168, 255),
+	accentSoft = Color3.fromRGB(31, 56, 96),
+	shadow = Color3.fromRGB(0, 0, 0),
 }
-
-local LANGUAGE_LABELS = {
-	en = "English",
-	vi = "Tiếng Việt",
-	jp = "日本語",
-}
-
-local runtime = {
-	connections = {},
-	tweens = {},
-}
-
-local currentLanguage = "vi"
-local uiBindings = {}
-local langButtons = {}
-local ambientDots = {}
-local digitLabels = {}
-local hoverTweens = {}
-local titleLabel
-
-local function trimTextValue(value)
-	if type(value) ~= "string" then
-		return nil
-	end
-	local trimmed = value:match("^%s*(.-)%s*$")
-	if trimmed == "" then
-		return nil
-	end
-	return trimmed
-end
-
-local function parseThemeColor(value)
-	if typeof(value) == "Color3" then
-		return value
-	end
-	local txt = trimTextValue(value)
-	if not txt then
-		return nil
-	end
-	txt = txt:gsub("^rgb%s*%(", ""):gsub("%)$", "")
-	local hex = txt:match("^#?(%x%x%x%x%x%x)$")
-	if hex then
-		return Color3.fromRGB(
-			tonumber(hex:sub(1, 2), 16),
-			tonumber(hex:sub(3, 4), 16),
-			tonumber(hex:sub(5, 6), 16)
-		)
-	end
-	local red, green, blue = txt:match("^(%-?%d+)%s*,%s*(%-?%d+)%s*,%s*(%-?%d+)$")
-	if red and green and blue then
-		return Color3.fromRGB(
-			math.clamp(tonumber(red) or 0, 0, 255),
-			math.clamp(tonumber(green) or 0, 0, 255),
-			math.clamp(tonumber(blue) or 0, 0, 255)
-		)
-	end
-	return nil
-end
-
-local function parseThemeConfig(rawText)
-	local data = {}
-	if type(rawText) ~= "string" or rawText == "" then
-		return data
-	end
-	for line in rawText:gmatch("[^\r\n]+") do
-		local clean = line:gsub("^%s+", ""):gsub("%s+$", "")
-		if clean ~= "" and not clean:match("^#") and not clean:match("^%-%-") then
-			local key, value = clean:match("^([%w_%.%-]+)%s*=%s*(.+)$")
-			if key and value then
-				data[key:lower()] = trimTextValue(value)
-			end
-		end
-	end
-	return data
-end
-
-local function resolveRemoteHeaderTitle(rawText)
-	local trimmed = trimTextValue(rawText)
-	if not trimmed then
-		return nil
-	end
-
-	local okLoad, chunk = pcall(function()
-		return loadstring(rawText)
-	end)
-	if okLoad and type(chunk) == "function" then
-		local okResult, result = pcall(chunk)
-		if okResult then
-			if type(result) == "string" then
-				return trimTextValue(result)
-			end
-			if type(result) == "table" then
-				return trimTextValue(result.title)
-					or trimTextValue(result.header)
-					or trimTextValue(result.text)
-					or trimTextValue(result[1])
-			end
-		end
-	end
-
-	local unquoted = trimmed:match('^"(.*)"$') or trimmed:match("^'(.*)'$")
-	return trimTextValue(unquoted) or trimmed
-end
-
-local function fetchRemoteHeaderTitle(defaultTitle)
-	local okResult, result = pcall(function()
-		if type(loadstring) ~= "function" then
-			return nil
-		end
-		local source = game:HttpGet(HEADER_SOURCE_URL)
-		local chunk = loadstring(source)
-		if type(chunk) ~= "function" then
-			return nil
-		end
-		return chunk()
-	end)
-	if okResult then
-		if type(result) == "string" then
-			return trimTextValue(result) or defaultTitle
-		end
-		if type(result) == "table" then
-			local resolved = trimTextValue(result.title)
-				or trimTextValue(result.header)
-				or trimTextValue(result.text)
-				or trimTextValue(result[1])
-			if resolved then
-				return resolved
-			end
-		end
-	end
-
-	local okFetch, rawText = pcall(function()
-		return game:HttpGet(HEADER_SOURCE_URL)
-	end)
-	if okFetch and type(rawText) == "string" then
-		return resolveRemoteHeaderTitle(rawText) or defaultTitle
-	end
-
-	return defaultTitle
-end
-
-local function normalizeThemeTable(rawTheme)
-	local normalized = {}
-	if type(rawTheme) ~= "table" then
-		return normalized
-	end
-	for key, value in pairs(rawTheme) do
-		if type(key) == "string" then
-			normalized[key:lower()] = value
-		end
-	end
-	return normalized
-end
-
-local function fetchRemoteThemeConfig()
-	local okResult, result = pcall(function()
-		if type(loadstring) ~= "function" then
-			return nil
-		end
-		local source = game:HttpGet(THEME_SOURCE_URL)
-		local chunk = loadstring(source)
-		if type(chunk) ~= "function" then
-			return nil
-		end
-		return chunk()
-	end)
-	if okResult then
-		if type(result) == "table" then
-			return normalizeThemeTable(result)
-		end
-		if type(result) == "string" then
-			return parseThemeConfig(result)
-		end
-	end
-
-	local okRaw, raw = pcall(function()
-		return game:HttpGet(THEME_SOURCE_URL)
-	end)
-	if okRaw and type(raw) == "string" and raw ~= "" then
-		return parseThemeConfig(raw)
-	end
-
-	return {}
-end
-
-local THEME = fetchRemoteThemeConfig()
-
-local REMOTE_WINDOW_TITLE = fetchRemoteHeaderTitle(TEXTS.en.windowTitle)
-TEXTS.en.windowTitle = REMOTE_WINDOW_TITLE
-TEXTS.vi.windowTitle = REMOTE_WINDOW_TITLE
-TEXTS.jp.windowTitle = REMOTE_WINDOW_TITLE
-
-local function themeColor(key, fallback)
-	return parseThemeColor(THEME[tostring(key):lower()]) or fallback
-end
-
-local function fitWindowTitle()
-	if not titleLabel or not titleLabel.Parent then
-		return
-	end
-	local availableWidth = math.max(titleLabel.AbsoluteSize.X, 1)
-	local availableHeight = math.max(titleLabel.AbsoluteSize.Y, 1)
-	local text = titleLabel.Text or ""
-	local textSize = TITLE_MAX_TEXT_SIZE
-	while textSize > TITLE_MIN_TEXT_SIZE do
-		local bounds = TextService:GetTextSize(text, textSize, titleLabel.Font, Vector2.new(10000, availableHeight))
-		if bounds.X <= availableWidth then
-			break
-		end
-		textSize = textSize - 1
-	end
-	titleLabel.TextSize = textSize
-	titleLabel.TextTruncate = Enum.TextTruncate.AtEnd
-end
-
-local function getHttpRequestFunction()
-	if type(syn) == "table" and type(syn.request) == "function" then
-		return syn.request
-	end
-	if type(http_request) == "function" then
-		return http_request
-	end
-	if type(request) == "function" then
-		return request
-	end
-	if type(fluxus) == "table" and type(fluxus.request) == "function" then
-		return fluxus.request
-	end
-	return nil
-end
-
-local function getCustomAssetFunction()
-	if type(getcustomasset) == "function" then
-		return getcustomasset
-	end
-	if type(getsynasset) == "function" then
-		return getsynasset
-	end
-	return nil
-end
-
-local function copyToClipboard(text)
-	if type(text) ~= "string" or text == "" then
-		return false
-	end
-	local clipboardSetters = {
-		setclipboard,
-		Clipboard and Clipboard.set,
-		toclipboard,
-		set_clipboard,
-	}
-	for _, setter in ipairs(clipboardSetters) do
-		if type(setter) == "function" then
-			local ok = pcall(setter, text)
-			if ok then
-				return true
-			end
-		end
-	end
-	return false
-end
-
-local function resolveRemoteImageAsset(url, imageFile)
-	if type(url) ~= "string" or url == "" then
-		return nil
-	end
-	if type(imageFile) ~= "string" or imageFile == "" then
-		return nil
-	end
-
-	local customAsset = getCustomAssetFunction()
-	if not customAsset then
-		return nil
-	end
-
-	if type(isfile) == "function" then
-		local okExists, exists = pcall(isfile, imageFile)
-		if okExists and exists then
-			local okAsset, asset = pcall(customAsset, imageFile)
-			if okAsset and type(asset) == "string" and asset ~= "" then
-				return asset
-			end
-		end
-	end
-
-	if type(writefile) ~= "function" then
-		return nil
-	end
-
-	local body
-	local requestFn = getHttpRequestFunction()
-	if requestFn then
-		local okRequest, response = pcall(requestFn, {
-			Url = url,
-			Method = "GET",
-		})
-		if okRequest and type(response) == "table" then
-			local success = (response.Success ~= false)
-				and ((response.StatusCode == nil) or ((tonumber(response.StatusCode) or 0) < 400))
-			if success and type(response.Body) == "string" and response.Body ~= "" then
-				body = response.Body
-			end
-		end
-	end
-
-	if not body then
-		local okFetch, rawBody = pcall(function()
-			return game:HttpGet(url)
-		end)
-		if okFetch and type(rawBody) == "string" and rawBody ~= "" then
-			body = rawBody
-		end
-	end
-
-	if not body then
-		return nil
-	end
-
-	local okWrite = pcall(writefile, imageFile, body)
-	if not okWrite then
-		return nil
-	end
-
-	local okAsset, asset = pcall(customAsset, imageFile)
-	if okAsset and type(asset) == "string" and asset ~= "" then
-		return asset
-	end
-
-	return nil
-end
-
-local CREDIT_AVATAR_ASSET = resolveRemoteImageAsset(CREDIT_AVATAR_URL, CREDIT_AVATAR_FILE)
-
-local UI_THEME = {
-	rootBackground = themeColor("bg", Color3.fromRGB(4, 8, 16)),
-	rootOverlay = themeColor("dark", Color3.fromRGB(2, 5, 10)),
-	panelBackground = themeColor("panel", Color3.fromRGB(9, 16, 28)),
-	panelBackgroundSoft = themeColor("panel", Color3.fromRGB(10, 18, 31)),
-	panelBackgroundAlt = themeColor("panel", Color3.fromRGB(11, 19, 32)),
-	panelBackgroundDeep = themeColor("dark", Color3.fromRGB(8, 14, 26)),
-	panelAccent = themeColor("acc", Color3.fromRGB(78, 184, 255)),
-	panelAccentSoft = themeColor("on", Color3.fromRGB(110, 205, 255)),
-	panelAccentMuted = themeColor("fx_soft", Color3.fromRGB(80, 196, 255)),
-	panelStroke = themeColor("menu_stroke", Color3.fromRGB(64, 121, 179)),
-	panelStrokeSoft = themeColor("content_stroke", Color3.fromRGB(48, 96, 150)),
-	panelStrokeMuted = themeColor("function_row_stroke", Color3.fromRGB(35, 68, 108)),
-	panelHighlight = themeColor("menu_shade", Color3.fromRGB(18, 44, 66)),
-	buttonSecondary = themeColor("btn_secondary", Color3.fromRGB(33, 42, 58)),
-	buttonSecondaryHover = themeColor("tab_hover_bg", Color3.fromRGB(54, 67, 88)),
-	buttonPrimary = themeColor("btn_primary", Color3.fromRGB(78, 184, 255)),
-	buttonPrimaryHover = themeColor("btn_primary_hover", Color3.fromRGB(110, 205, 255)),
-	buttonPrimaryText = themeColor("dark", Color3.fromRGB(8, 14, 24)),
-	buttonActiveText = themeColor("dark", Color3.fromRGB(11, 19, 31)),
-	textPrimary = themeColor("txt", Color3.fromRGB(244, 247, 255)),
-	textPrimarySoft = themeColor("txt", Color3.fromRGB(242, 247, 255)),
-	textSecondary = themeColor("txtm", Color3.fromRGB(185, 200, 220)),
-	textMuted = themeColor("txtm", Color3.fromRGB(140, 168, 196)),
-	textMutedSoft = themeColor("txtm", Color3.fromRGB(132, 157, 182)),
-	textSubtle = themeColor("txtm", Color3.fromRGB(108, 137, 170)),
-	textOnDark = themeColor("wht", Color3.fromRGB(255, 255, 255)),
-	textLang = themeColor("lang_btn_text", Color3.fromRGB(220, 231, 245)),
-	langButton = themeColor("lang_btn_bg", Color3.fromRGB(18, 30, 49)),
-	langButtonHover = themeColor("lang_btn_hover_bg", Color3.fromRGB(27, 43, 68)),
-	badgeBackground = themeColor("tab_hint_bg", Color3.fromRGB(14, 34, 52)),
-	badgeText = themeColor("tab_hint_text", Color3.fromRGB(117, 223, 255)),
-	statusDot = themeColor("on", Color3.fromRGB(86, 220, 255)),
-	avatarStroke = themeColor("fx_soft", Color3.fromRGB(90, 196, 255)),
-	ambientPrimary = themeColor("fx_soft", Color3.fromRGB(67, 217, 255)),
-	ambientSecondary = themeColor("fx_deep", Color3.fromRGB(54, 128, 255)),
-	digit = themeColor("fx_digit", Color3.fromRGB(94, 226, 255)),
-}
-
-local function trackConnection(connection)
-	if connection then
-		table.insert(runtime.connections, connection)
-	end
-	return connection
-end
-
-local function trackTween(tween)
-	if tween then
-		table.insert(runtime.tweens, tween)
-	end
-	return tween
-end
-
-local function cleanupOldGui()
-	local roots = {}
-	local okHui, hui = pcall(function()
-		if type(gethui) == "function" then
-			return gethui()
-		end
-	end)
-	if okHui and hui then
-		table.insert(roots, hui)
-	end
-	table.insert(roots, PLAYER_GUI)
-	for _, root in ipairs(roots) do
-		local existing = root and root:FindFirstChild(GUI_NAME)
-		if existing then
-			existing:Destroy()
-		end
-	end
-end
-
-cleanupOldGui()
-
-local function readSavedLanguage()
-	if type(isfile) ~= "function" or type(readfile) ~= "function" then
-		return nil
-	end
-	local okExists, exists = pcall(isfile, LANGUAGE_FILE)
-	if not okExists or not exists then
-		return nil
-	end
-	local okRead, raw = pcall(readfile, LANGUAGE_FILE)
-	if not okRead or type(raw) ~= "string" then
-		return nil
-	end
-	local clean = raw:match("^%s*(.-)%s*$")
-	if TEXTS[clean] then
-		return clean
-	end
-	return nil
-end
-
-local function saveLanguage(lang)
-	if type(writefile) ~= "function" or not TEXTS[lang] then
-		return false
-	end
-	return pcall(writefile, LANGUAGE_FILE, lang)
-end
-
-currentLanguage = readSavedLanguage() or currentLanguage
-
-local function tr(key)
-	local pack = TEXTS[currentLanguage] or TEXTS.vi
-	return pack[key] or TEXTS.vi[key] or key
-end
-
-local function bindText(object, key, formatter)
-	uiBindings[object] = { key = key, formatter = formatter }
-	local value = tr(key)
-	object.Text = formatter and formatter(value) or value
-end
-
-local function setZIndexRecursive(rootObject, zIndex)
-	if not rootObject then
-		return
-	end
-	pcall(function()
-		rootObject.ZIndex = zIndex
-	end)
-	for _, child in ipairs(rootObject:GetDescendants()) do
-		pcall(function()
-			child.ZIndex = zIndex
-		end)
-	end
-end
-
-local function refreshTexts()
-	for object, info in pairs(uiBindings) do
-		if object and object.Parent then
-			local value = tr(info.key)
-			object.Text = info.formatter and info.formatter(value) or value
-		end
-	end
-	fitWindowTitle()
-	for lang, button in pairs(langButtons) do
-		if button and button.Parent then
-			local active = lang == currentLanguage
-			button.BackgroundColor3 = active and UI_THEME.panelAccent or UI_THEME.langButton
-			button.TextColor3 = active and UI_THEME.buttonActiveText or UI_THEME.textLang
-		end
-	end
-end
 
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = GUI_NAME
-screenGui.IgnoreGuiInset = true
+screenGui.Name = guiName
 screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-screenGui.DisplayOrder = 2147483647
+screenGui.Parent = playerGui
 
-do
-	local parent = PLAYER_GUI
-	local okHui, hui = pcall(function()
-		if type(gethui) == "function" then
-			return gethui()
-		end
-	end)
-	if okHui and hui then
-		parent = hui
-	end
-	screenGui.Parent = parent
-end
+local background = Instance.new("Frame")
+background.Name = "Background"
+background.Size = UDim2.fromScale(1, 1)
+background.BackgroundColor3 = palette.backgroundTop
+background.BorderSizePixel = 0
+background.Parent = screenGui
 
-local root = Instance.new("Frame")
-root.Size = UDim2.fromScale(1, 1)
-root.BackgroundColor3 = UI_THEME.rootBackground
-root.BorderSizePixel = 0
-root.Parent = screenGui
-
-local rootGradient = Instance.new("UIGradient", root)
-rootGradient.Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, UI_THEME.rootBackground),
-	ColorSequenceKeypoint.new(0.5, UI_THEME.rootBackground),
-	ColorSequenceKeypoint.new(1, UI_THEME.rootBackground),
+local backgroundGradient = Instance.new("UIGradient")
+backgroundGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, palette.backgroundTop),
+	ColorSequenceKeypoint.new(1, palette.backgroundBottom),
 })
-rootGradient.Rotation = 18
+backgroundGradient.Rotation = 110
+backgroundGradient.Parent = background
 
-local ambientLayer = Instance.new("Frame")
-ambientLayer.Name = "AmbientLayer"
-ambientLayer.Size = UDim2.fromScale(1, 1)
-ambientLayer.BackgroundTransparency = 1
-ambientLayer.ZIndex = 0
-ambientLayer.Visible = false
-ambientLayer.Parent = root
+local glowA = Instance.new("Frame")
+glowA.Name = "GlowA"
+glowA.AnchorPoint = Vector2.new(0.5, 0.5)
+glowA.Position = UDim2.fromScale(0.2, 0.18)
+glowA.Size = UDim2.fromOffset(300, 300)
+glowA.BackgroundColor3 = Color3.fromRGB(28, 56, 112)
+glowA.BackgroundTransparency = 0.65
+glowA.BorderSizePixel = 0
+glowA.ZIndex = 0
+glowA.Parent = background
 
-local blurOverlay = Instance.new("Frame")
-blurOverlay.Size = UDim2.fromScale(1, 1)
-blurOverlay.BackgroundColor3 = UI_THEME.rootOverlay
-blurOverlay.BackgroundTransparency = 1
-blurOverlay.BorderSizePixel = 0
-blurOverlay.ZIndex = 1
-blurOverlay.Visible = false
-blurOverlay.Parent = root
+local glowACorner = Instance.new("UICorner")
+glowACorner.CornerRadius = UDim.new(1, 0)
+glowACorner.Parent = glowA
 
-local main = Instance.new("Frame")
-main.AnchorPoint = Vector2.new(0.5, 0.5)
-main.Position = UDim2.fromScale(0.5, 0.5)
-main.Size = UDim2.fromOffset(BASE_MAIN_WIDTH, BASE_MAIN_HEIGHT)
-main.BackgroundColor3 = UI_THEME.panelBackground
-main.BackgroundTransparency = 0.08
-main.BorderSizePixel = 0
-main.Parent = root
-main.Active = false
-main.Draggable = false
-main.ZIndex = 2
-Instance.new("UICorner", main).CornerRadius = UDim.new(0, 24)
+local glowB = glowA:Clone()
+glowB.Name = "GlowB"
+glowB.Position = UDim2.fromScale(0.82, 0.78)
+glowB.Size = UDim2.fromOffset(360, 360)
+glowB.BackgroundColor3 = Color3.fromRGB(255, 120, 34)
+glowB.BackgroundTransparency = 0.74
+glowB.Parent = background
 
-local mainScale = Instance.new("UIScale")
-mainScale.Scale = 1
-mainScale.Parent = main
+local panelShadow = Instance.new("ImageLabel")
+panelShadow.Name = "PanelShadow"
+panelShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+panelShadow.Position = UDim2.fromScale(0.5, 0.5)
+panelShadow.Size = UDim2.fromOffset(670, 350)
+panelShadow.BackgroundTransparency = 1
+panelShadow.Image = "rbxassetid://1316045217"
+panelShadow.ImageColor3 = palette.shadow
+panelShadow.ImageTransparency = 0.42
+panelShadow.ScaleType = Enum.ScaleType.Slice
+panelShadow.SliceCenter = Rect.new(10, 10, 118, 118)
+panelShadow.ZIndex = 1
+panelShadow.Parent = background
 
-local mainStroke = Instance.new("UIStroke", main)
-mainStroke.Color = UI_THEME.panelStroke
-mainStroke.Thickness = 1.6
-mainStroke.Transparency = 0.12
+local panel = Instance.new("Frame")
+panel.Name = "Panel"
+panel.AnchorPoint = Vector2.new(0.5, 0.5)
+panel.Position = UDim2.fromScale(0.5, 0.5)
+panel.Size = UDim2.fromOffset(610, 290)
+panel.BackgroundColor3 = palette.panel
+panel.BorderSizePixel = 0
+panel.ZIndex = 2
+panel.Parent = background
 
-local mainGradient = Instance.new("UIGradient", main)
-mainGradient.Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, UI_THEME.panelBackgroundAlt),
-	ColorSequenceKeypoint.new(0.55, UI_THEME.panelBackground),
-	ColorSequenceKeypoint.new(1, UI_THEME.panelBackgroundDeep),
+local panelCorner = Instance.new("UICorner")
+panelCorner.CornerRadius = UDim.new(0, 26)
+panelCorner.Parent = panel
+
+local panelStroke = Instance.new("UIStroke")
+panelStroke.Color = palette.panelStroke
+panelStroke.Thickness = 1.2
+panelStroke.Transparency = 0.15
+panelStroke.Parent = panel
+
+local panelGradient = Instance.new("UIGradient")
+panelGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(18, 27, 42)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 16, 26)),
 })
-mainGradient.Rotation = 135
+panelGradient.Rotation = 90
+panelGradient.Parent = panel
 
-local glow = Instance.new("Frame")
-glow.AnchorPoint = Vector2.new(0.5, 0.5)
-glow.Position = UDim2.fromScale(0.5, 0.08)
-glow.Size = UDim2.fromOffset(480, 150)
-glow.BackgroundColor3 = UI_THEME.panelAccentMuted
-glow.BackgroundTransparency = 1
-glow.BorderSizePixel = 0
-glow.ZIndex = 2
-glow.Visible = false
-glow.Parent = main
-Instance.new("UICorner", glow).CornerRadius = UDim.new(1, 0)
+local sizeConstraint = Instance.new("UISizeConstraint")
+sizeConstraint.MinSize = Vector2.new(320, 240)
+sizeConstraint.MaxSize = Vector2.new(610, 290)
+sizeConstraint.Parent = panel
 
-local digitLayer = Instance.new("Frame")
-digitLayer.Size = UDim2.fromScale(1, 1)
-digitLayer.BackgroundTransparency = 1
-digitLayer.ClipsDescendants = true
-digitLayer.ZIndex = 1
-digitLayer.Visible = false
-digitLayer.Parent = main
+local scale = Instance.new("UIScale")
+scale.Scale = 0.88
+scale.Parent = panel
 
-local header = Instance.new("Frame")
-header.Size = UDim2.new(1, -24, 0, 54)
-header.Position = UDim2.fromOffset(12, 12)
-header.BackgroundTransparency = 1
-header.ZIndex = 6
-header.Parent = main
+local badge = Instance.new("TextLabel")
+badge.Name = "Badge"
+badge.Position = UDim2.fromOffset(28, 24)
+badge.Size = UDim2.fromOffset(182, 34)
+badge.BackgroundColor3 = palette.badge
+badge.BorderSizePixel = 0
+badge.Font = Enum.Font.GothamBold
+badge.Text = "MOBILE CHƯA HỖ TRỢ"
+badge.TextColor3 = palette.badgeText
+badge.TextSize = 15
+badge.ZIndex = 3
+badge.Parent = panel
 
-titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, -404, 0, 26)
-titleLabel.BackgroundTransparency = 1
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.TextSize = TITLE_MAX_TEXT_SIZE
-titleLabel.TextColor3 = UI_THEME.textPrimarySoft
-titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-titleLabel.TextYAlignment = Enum.TextYAlignment.Center
-titleLabel.TextTruncate = Enum.TextTruncate.AtEnd
-titleLabel.ZIndex = 7
-titleLabel.Parent = header
-bindText(titleLabel, "windowTitle")
+local badgeCorner = Instance.new("UICorner")
+badgeCorner.CornerRadius = UDim.new(1, 0)
+badgeCorner.Parent = badge
 
-local subtitleLabel = Instance.new("TextLabel")
-subtitleLabel.Size = UDim2.new(1, -404, 0, 18)
-subtitleLabel.Position = UDim2.fromOffset(0, 30)
-subtitleLabel.BackgroundTransparency = 1
-subtitleLabel.Font = Enum.Font.Gotham
-subtitleLabel.TextSize = 11
-subtitleLabel.TextColor3 = UI_THEME.textMuted
-subtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-subtitleLabel.TextYAlignment = Enum.TextYAlignment.Center
-subtitleLabel.ZIndex = 7
-subtitleLabel.Parent = header
-bindText(subtitleLabel, "maintenanceBadge")
+local creatorAvatar = Instance.new("ImageLabel")
+creatorAvatar.Name = "CreatorAvatar"
+creatorAvatar.AnchorPoint = Vector2.new(1, 0)
+creatorAvatar.BackgroundTransparency = 1
+creatorAvatar.Position = UDim2.new(1, -28, 0, 68)
+creatorAvatar.Size = UDim2.fromOffset(56, 56)
+creatorAvatar.Image = ""
+creatorAvatar.ScaleType = Enum.ScaleType.Crop
+creatorAvatar.ZIndex = 4
+creatorAvatar.Parent = panel
 
-local langHolder = Instance.new("Frame")
-langHolder.AnchorPoint = Vector2.new(1, 0)
-langHolder.Position = UDim2.new(1, -104, 0, 0)
-langHolder.Size = UDim2.fromOffset(268, 34)
-langHolder.BackgroundTransparency = 1
-langHolder.ZIndex = 7
-langHolder.Parent = header
+local creatorAvatarCorner = Instance.new("UICorner")
+creatorAvatarCorner.CornerRadius = UDim.new(1, 0)
+creatorAvatarCorner.Parent = creatorAvatar
 
-local langLayout = Instance.new("UIListLayout", langHolder)
-langLayout.FillDirection = Enum.FillDirection.Horizontal
-langLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
-langLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-langLayout.Padding = UDim.new(0, 8)
+local creatorAvatarStroke = Instance.new("UIStroke")
+creatorAvatarStroke.Color = palette.panelStroke
+creatorAvatarStroke.Thickness = 1.2
+creatorAvatarStroke.Transparency = 0.2
+creatorAvatarStroke.Parent = creatorAvatar
+
+local title = Instance.new("TextLabel")
+title.Name = "Title"
+title.BackgroundTransparency = 1
+title.Position = UDim2.fromOffset(28, 72)
+title.Size = UDim2.new(1, -108, 0, 58)
+title.Font = Enum.Font.GothamBold
+title.Text = "Script này hiện không hỗ trợ trên Mobile"
+title.TextColor3 = palette.primaryText
+title.TextSize = 29
+title.TextWrapped = true
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.TextYAlignment = Enum.TextYAlignment.Top
+title.ZIndex = 3
+title.Parent = panel
+
+local body = Instance.new("TextLabel")
+body.Name = "Body"
+body.BackgroundTransparency = 1
+body.Position = UDim2.fromOffset(28, 138)
+body.Size = UDim2.new(1, -56, 0, 56)
+body.Font = Enum.Font.Gotham
+body.Text = "Phiên bản Mobile đang được chuẩn bị và sẽ sớm được thêm vào cho đến khi có thông báo mới. Vui lòng dùng PC hoặc executor phù hợp trong thời gian chờ."
+body.TextColor3 = palette.secondaryText
+body.TextSize = 17
+body.TextWrapped = true
+body.TextXAlignment = Enum.TextXAlignment.Left
+body.TextYAlignment = Enum.TextYAlignment.Top
+body.ZIndex = 3
+body.Parent = panel
+
+local divider = Instance.new("Frame")
+divider.Name = "Divider"
+divider.Position = UDim2.fromOffset(28, 208)
+divider.Size = UDim2.new(1, -56, 0, 1)
+divider.BackgroundColor3 = palette.accentSoft
+divider.BorderSizePixel = 0
+divider.ZIndex = 3
+divider.Parent = panel
+
+local footer = Instance.new("TextLabel")
+footer.Name = "Footer"
+footer.BackgroundTransparency = 1
+footer.Position = UDim2.fromOffset(28, 224)
+footer.Size = UDim2.new(1, -150, 0, 36)
+footer.Font = Enum.Font.GothamMedium
+footer.Text = "Thông báo sẽ được cập nhật khi bản Mobile chính thức sẵn sàng."
+footer.TextColor3 = palette.accent
+footer.TextSize = 14
+footer.TextWrapped = true
+footer.TextXAlignment = Enum.TextXAlignment.Left
+footer.TextYAlignment = Enum.TextYAlignment.Center
+footer.ZIndex = 3
+footer.Parent = panel
 
 local closeButton = Instance.new("TextButton")
-closeButton.AnchorPoint = Vector2.new(1, 0)
-closeButton.Position = UDim2.new(1, 0, 0, 2)
-closeButton.Size = UDim2.fromOffset(92, 30)
-closeButton.BackgroundColor3 = UI_THEME.buttonSecondary
+closeButton.Name = "CloseButton"
+closeButton.AnchorPoint = Vector2.new(1, 0.5)
+closeButton.Position = UDim2.new(1, -28, 0.5, 102)
+closeButton.Size = UDim2.fromOffset(108, 40)
+closeButton.BackgroundColor3 = palette.accentSoft
 closeButton.BorderSizePixel = 0
-closeButton.AutoButtonColor = false
 closeButton.Font = Enum.Font.GothamBold
-closeButton.TextSize = 12
-closeButton.TextColor3 = UI_THEME.textPrimary
-closeButton.ZIndex = 8
-closeButton.Parent = header
-Instance.new("UICorner", closeButton).CornerRadius = UDim.new(0, 10)
-bindText(closeButton, "close")
+closeButton.Text = "Đóng"
+closeButton.TextColor3 = palette.primaryText
+closeButton.TextSize = 15
+closeButton.ZIndex = 3
+closeButton.Parent = panel
 
-local contentHolder = Instance.new("Frame")
-contentHolder.Size = UDim2.new(1, -28, 1, -92)
-contentHolder.Position = UDim2.fromOffset(14, 74)
-contentHolder.BackgroundTransparency = 1
-contentHolder.ZIndex = 5
-contentHolder.Parent = main
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 14)
+closeCorner.Parent = closeButton
 
-local contentLayout = Instance.new("UIListLayout", contentHolder)
-contentLayout.FillDirection = Enum.FillDirection.Horizontal
-contentLayout.Padding = UDim.new(0, 14)
-contentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-contentLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+local closeStroke = Instance.new("UIStroke")
+closeStroke.Color = palette.accent
+closeStroke.Thickness = 1
+closeStroke.Transparency = 0.35
+closeStroke.Parent = closeButton
 
-local creatorCard = Instance.new("Frame")
-creatorCard.Name = "CreatorCard"
-creatorCard.Size = UDim2.fromOffset(252, 320)
-creatorCard.BackgroundColor3 = UI_THEME.panelBackgroundSoft
-creatorCard.BorderSizePixel = 0
-creatorCard.ZIndex = 5
-creatorCard.Parent = contentHolder
-creatorCard.ClipsDescendants = true
-Instance.new("UICorner", creatorCard).CornerRadius = UDim.new(0, 22)
+local mobileHint = Instance.new("TextLabel")
+mobileHint.Name = "MobileHint"
+mobileHint.BackgroundTransparency = 1
+mobileHint.AnchorPoint = Vector2.new(1, 0.5)
+mobileHint.Position = UDim2.new(1, -28, 0.5, -102)
+mobileHint.Size = UDim2.fromOffset(148, 24)
+mobileHint.Font = Enum.Font.GothamBold
+mobileHint.Text = UserInputService.TouchEnabled and "Thiết bị: Mobile" or "Thiết bị: Desktop"
+mobileHint.TextColor3 = palette.secondaryText
+mobileHint.TextSize = 13
+mobileHint.TextXAlignment = Enum.TextXAlignment.Right
+mobileHint.ZIndex = 3
+mobileHint.Parent = panel
 
-local creatorStroke = Instance.new("UIStroke", creatorCard)
-creatorStroke.Color = UI_THEME.panelStrokeSoft
-creatorStroke.Thickness = 1.2
-creatorStroke.Transparency = 0.1
+local function updateLayout()
+	local viewport = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(1280, 720)
+	local minAxis = math.min(viewport.X, viewport.Y)
+	local computedScale = math.clamp(minAxis / 720, 0.68, 1)
+	scale.Scale = computedScale
 
-local creatorGlow = Instance.new("Frame")
-creatorGlow.AnchorPoint = Vector2.new(0.5, 0)
-creatorGlow.Position = UDim2.new(0.5, 0, 0, 12)
-creatorGlow.Size = UDim2.fromOffset(132, 30)
-creatorGlow.BackgroundColor3 = UI_THEME.panelHighlight
-creatorGlow.BackgroundTransparency = 0.18
-creatorGlow.BorderSizePixel = 0
-creatorGlow.ZIndex = 5
-creatorGlow.Parent = creatorCard
-Instance.new("UICorner", creatorGlow).CornerRadius = UDim.new(1, 0)
+	if viewport.X < 700 then
+		panel.Size = UDim2.fromOffset(460, 320)
+		title.TextSize = 24
+		body.TextSize = 15
+		closeButton.Position = UDim2.new(1, -28, 1, -34)
+		footer.Size = UDim2.new(1, -170, 0, 44)
+		footer.Position = UDim2.fromOffset(28, 228)
+		mobileHint.Position = UDim2.new(1, -28, 0, 34)
+	else
+		panel.Size = UDim2.fromOffset(610, 290)
+		title.TextSize = 29
+		body.TextSize = 17
+		closeButton.Position = UDim2.new(1, -28, 0.5, 102)
+		footer.Size = UDim2.new(1, -150, 0, 36)
+		footer.Position = UDim2.fromOffset(28, 224)
+		mobileHint.Position = UDim2.new(1, -28, 0.5, -102)
+	end
 
-local creatorTitle = Instance.new("TextLabel")
-creatorTitle.Size = UDim2.new(1, -24, 0, 26)
-creatorTitle.Position = UDim2.fromOffset(12, 14)
-creatorTitle.BackgroundTransparency = 1
-creatorTitle.Font = Enum.Font.GothamBold
-creatorTitle.TextSize = 18
-creatorTitle.TextColor3 = UI_THEME.textPrimarySoft
-creatorTitle.TextXAlignment = Enum.TextXAlignment.Center
-creatorTitle.TextYAlignment = Enum.TextYAlignment.Center
-creatorTitle.ZIndex = 6
-creatorTitle.Parent = creatorCard
-bindText(creatorTitle, "creatorTitle")
+	if viewport.X < 480 then
+		badge.Size = UDim2.fromOffset(158, 32)
+		badge.TextSize = 13
+		title.TextSize = 21
+		body.TextSize = 14
+		panel.Size = UDim2.fromOffset(400, 336)
+		body.Size = UDim2.new(1, -56, 0, 76)
+		divider.Position = UDim2.fromOffset(28, 228)
+		footer.Position = UDim2.fromOffset(28, 242)
+		closeButton.Size = UDim2.fromOffset(96, 38)
+	else
+		body.Size = UDim2.new(1, -56, 0, 56)
+		divider.Position = UDim2.fromOffset(28, 208)
+		closeButton.Size = UDim2.fromOffset(108, 40)
+	end
+end
 
-local creatorSubtitle = Instance.new("TextLabel")
-creatorSubtitle.Size = UDim2.new(1, -24, 0, 18)
-creatorSubtitle.Position = UDim2.fromOffset(12, 40)
-creatorSubtitle.BackgroundTransparency = 1
-creatorSubtitle.Font = Enum.Font.Gotham
-creatorSubtitle.TextSize = 11
-creatorSubtitle.TextColor3 = UI_THEME.textMutedSoft
-creatorSubtitle.TextXAlignment = Enum.TextXAlignment.Center
-creatorSubtitle.TextYAlignment = Enum.TextYAlignment.Center
-creatorSubtitle.ZIndex = 6
-creatorSubtitle.Parent = creatorCard
-bindText(creatorSubtitle, "creatorSubtitle")
+local panelTweenInfo = TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+local buttonTweenInfo = TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
-local avatarWrap = Instance.new("Frame")
-avatarWrap.Size = UDim2.fromOffset(128, 128)
-avatarWrap.Position = UDim2.new(0.5, -64, 0, 72)
-avatarWrap.BackgroundColor3 = UI_THEME.panelBackgroundDeep
-avatarWrap.BorderSizePixel = 0
-avatarWrap.ZIndex = 6
-avatarWrap.Parent = creatorCard
-Instance.new("UICorner", avatarWrap).CornerRadius = UDim.new(1, 0)
+TweenService:Create(scale, panelTweenInfo, {Scale = 1}):Play()
+panel.Position = UDim2.fromScale(0.5, 0.53)
+TweenService:Create(panel, panelTweenInfo, {Position = UDim2.fromScale(0.5, 0.5)}):Play()
 
-local avatarStroke = Instance.new("UIStroke", avatarWrap)
-avatarStroke.Color = UI_THEME.avatarStroke
-avatarStroke.Thickness = 1.5
-
-local avatarImage = Instance.new("ImageLabel")
-avatarImage.Size = UDim2.new(1, -12, 1, -12)
-avatarImage.Position = UDim2.fromOffset(6, 6)
-avatarImage.BackgroundTransparency = 1
-avatarImage.Image = CREDIT_AVATAR_ASSET or string.format("rbxthumb://type=AvatarHeadShot&id=%d&w=420&h=420", CREDIT_USER_ID)
-avatarImage.ScaleType = Enum.ScaleType.Crop
-avatarImage.ZIndex = 7
-avatarImage.Parent = avatarWrap
-Instance.new("UICorner", avatarImage).CornerRadius = UDim.new(1, 0)
-if not CREDIT_AVATAR_ASSET then
+task.defer(function()
 	pcall(function()
 		local thumb = Players:GetUserThumbnailAsync(CREDIT_USER_ID, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
 		if thumb and thumb ~= "" then
-			avatarImage.Image = thumb
+			creatorAvatar.Image = thumb
 		end
 	end)
-end
+end)
 
-local creatorUser = Instance.new("TextLabel")
-creatorUser.Size = UDim2.new(1, -26, 0, 22)
-creatorUser.Position = UDim2.fromOffset(13, 204)
-creatorUser.BackgroundTransparency = 1
-creatorUser.Font = Enum.Font.GothamBold
-creatorUser.TextSize = 14
-creatorUser.TextColor3 = UI_THEME.textPrimary
-creatorUser.TextXAlignment = Enum.TextXAlignment.Center
-creatorUser.TextYAlignment = Enum.TextYAlignment.Center
-creatorUser.ZIndex = 6
-creatorUser.Parent = creatorCard
-bindText(creatorUser, "creatorUser")
+closeButton.MouseEnter:Connect(function()
+	TweenService:Create(closeButton, buttonTweenInfo, {BackgroundColor3 = palette.accent}):Play()
+end)
 
-local creatorTag = Instance.new("TextLabel")
-creatorTag.Size = UDim2.new(1, -26, 0, 18)
-creatorTag.Position = UDim2.fromOffset(13, 226)
-creatorTag.BackgroundTransparency = 1
-creatorTag.Font = Enum.Font.Gotham
-creatorTag.TextSize = 12
-creatorTag.TextColor3 = UI_THEME.textSecondary
-creatorTag.TextXAlignment = Enum.TextXAlignment.Center
-creatorTag.TextYAlignment = Enum.TextYAlignment.Center
-creatorTag.ZIndex = 6
-creatorTag.Parent = creatorCard
-bindText(creatorTag, "creatorTag")
+closeButton.MouseLeave:Connect(function()
+	TweenService:Create(closeButton, buttonTweenInfo, {BackgroundColor3 = palette.accentSoft}):Play()
+end)
 
-local creatorBadge = Instance.new("TextLabel")
-creatorBadge.Size = UDim2.fromOffset(142, 28)
-creatorBadge.Position = UDim2.new(0.5, -71, 1, -72)
-creatorBadge.BackgroundColor3 = UI_THEME.badgeBackground
-creatorBadge.BorderSizePixel = 0
-creatorBadge.Font = Enum.Font.GothamBold
-creatorBadge.TextSize = 12
-creatorBadge.TextColor3 = UI_THEME.badgeText
-creatorBadge.Text = "@" .. CREDIT_USERNAME
-creatorBadge.TextYAlignment = Enum.TextYAlignment.Center
-creatorBadge.ZIndex = 6
-creatorBadge.Parent = creatorCard
-Instance.new("UICorner", creatorBadge).CornerRadius = UDim.new(0, 10)
-
-local discordButton = Instance.new("TextButton")
-discordButton.Size = UDim2.fromOffset(142, 28)
-discordButton.Position = UDim2.new(0.5, -71, 1, -38)
-discordButton.BackgroundColor3 = UI_THEME.buttonPrimary
-discordButton.BorderSizePixel = 0
-discordButton.AutoButtonColor = false
-discordButton.Font = Enum.Font.GothamBold
-discordButton.TextSize = 11
-discordButton.TextColor3 = UI_THEME.buttonPrimaryText
-discordButton.ZIndex = 6
-discordButton.Parent = creatorCard
-Instance.new("UICorner", discordButton).CornerRadius = UDim.new(0, 10)
-bindText(discordButton, "discordCopy")
-
-local infoCard = Instance.new("Frame")
-infoCard.Name = "InfoCard"
-infoCard.Size = UDim2.fromOffset(566, 320)
-infoCard.BackgroundColor3 = UI_THEME.panelBackgroundAlt
-infoCard.BorderSizePixel = 0
-infoCard.ZIndex = 5
-infoCard.Parent = contentHolder
-infoCard.ClipsDescendants = true
-Instance.new("UICorner", infoCard).CornerRadius = UDim.new(0, 22)
-
-local infoStroke = Instance.new("UIStroke", infoCard)
-infoStroke.Color = UI_THEME.panelStrokeSoft
-infoStroke.Thickness = 1.2
-infoStroke.Transparency = 0.08
-
-local badge = Instance.new("TextLabel")
-badge.Size = UDim2.fromOffset(188, 32)
-badge.Position = UDim2.fromOffset(18, 18)
-badge.BackgroundColor3 = UI_THEME.badgeBackground
-badge.BorderSizePixel = 0
-badge.Font = Enum.Font.GothamBold
-badge.TextSize = 12
-badge.TextColor3 = UI_THEME.badgeText
-badge.TextYAlignment = Enum.TextYAlignment.Center
-badge.ZIndex = 6
-badge.Parent = infoCard
-Instance.new("UICorner", badge).CornerRadius = UDim.new(0, 10)
-bindText(badge, "maintenanceBadge")
-
-local maintenanceTitle = Instance.new("TextLabel")
-maintenanceTitle.Size = UDim2.new(1, -36, 0, 48)
-maintenanceTitle.Position = UDim2.fromOffset(18, 64)
-maintenanceTitle.BackgroundTransparency = 1
-maintenanceTitle.Font = Enum.Font.GothamBold
-maintenanceTitle.TextSize = 28
-maintenanceTitle.TextWrapped = true
-maintenanceTitle.TextColor3 = UI_THEME.textPrimary
-maintenanceTitle.TextXAlignment = Enum.TextXAlignment.Left
-maintenanceTitle.TextYAlignment = Enum.TextYAlignment.Top
-maintenanceTitle.ZIndex = 6
-maintenanceTitle.Parent = infoCard
-bindText(maintenanceTitle, "maintenanceTitle")
-
-local maintenanceBody = Instance.new("TextLabel")
-maintenanceBody.Size = UDim2.new(1, -36, 0, 40)
-maintenanceBody.Position = UDim2.fromOffset(18, 114)
-maintenanceBody.BackgroundTransparency = 1
-maintenanceBody.Font = Enum.Font.Gotham
-maintenanceBody.TextSize = 14
-maintenanceBody.TextWrapped = true
-maintenanceBody.TextColor3 = UI_THEME.textSecondary
-maintenanceBody.TextXAlignment = Enum.TextXAlignment.Left
-maintenanceBody.TextYAlignment = Enum.TextYAlignment.Top
-maintenanceBody.ZIndex = 6
-maintenanceBody.Parent = infoCard
-bindText(maintenanceBody, "maintenanceBody")
-
-local maintenanceNote = Instance.new("TextLabel")
-maintenanceNote.Size = UDim2.new(1, -36, 0, 28)
-maintenanceNote.Position = UDim2.fromOffset(18, 158)
-maintenanceNote.BackgroundTransparency = 1
-maintenanceNote.Font = Enum.Font.Gotham
-maintenanceNote.TextSize = 12
-maintenanceNote.TextWrapped = true
-maintenanceNote.TextColor3 = UI_THEME.textMutedSoft
-maintenanceNote.TextXAlignment = Enum.TextXAlignment.Left
-maintenanceNote.TextYAlignment = Enum.TextYAlignment.Top
-maintenanceNote.ZIndex = 6
-maintenanceNote.Parent = infoCard
-bindText(maintenanceNote, "maintenanceNote")
-
-local statusCard = Instance.new("Frame")
-statusCard.Size = UDim2.new(1, -36, 0, 74)
-statusCard.Position = UDim2.fromOffset(18, 196)
-statusCard.BackgroundColor3 = UI_THEME.panelBackgroundDeep
-statusCard.BorderSizePixel = 0
-statusCard.ZIndex = 6
-statusCard.Parent = infoCard
-Instance.new("UICorner", statusCard).CornerRadius = UDim.new(0, 16)
-
-local statusStroke = Instance.new("UIStroke", statusCard)
-statusStroke.Color = UI_THEME.panelStrokeMuted
-statusStroke.Thickness = 1
-statusStroke.Transparency = 0.08
-
-local bottomTextHolder = Instance.new("Frame")
-bottomTextHolder.AnchorPoint = Vector2.new(0, 1)
-bottomTextHolder.Size = UDim2.new(1, -228, 0, 34)
-bottomTextHolder.Position = UDim2.new(0, 18, 1, -10)
-bottomTextHolder.BackgroundTransparency = 1
-bottomTextHolder.ZIndex = 6
-bottomTextHolder.Parent = infoCard
-
-local statusTitle = Instance.new("TextLabel")
-statusTitle.Size = UDim2.new(1, -24, 0, 18)
-statusTitle.Position = UDim2.fromOffset(12, 10)
-statusTitle.BackgroundTransparency = 1
-statusTitle.Font = Enum.Font.GothamBold
-statusTitle.TextSize = 13
-statusTitle.TextColor3 = UI_THEME.textPrimary
-statusTitle.TextXAlignment = Enum.TextXAlignment.Left
-statusTitle.TextYAlignment = Enum.TextYAlignment.Center
-statusTitle.ZIndex = 7
-statusTitle.Parent = statusCard
-bindText(statusTitle, "statusTitle")
-
-local function createStatusLine(order, key)
-	local rowTop = 28 + ((order - 1) * 14)
-	local dot = Instance.new("Frame")
-	dot.Size = UDim2.fromOffset(8, 8)
-	dot.Position = UDim2.fromOffset(14, rowTop + 3)
-	dot.BackgroundColor3 = UI_THEME.statusDot
-	dot.BorderSizePixel = 0
-	dot.ZIndex = 7
-	dot.Parent = statusCard
-	Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
-
-	local line = Instance.new("TextLabel")
-	line.Size = UDim2.new(1, -34, 0, 14)
-	line.Position = UDim2.fromOffset(28, rowTop)
-	line.BackgroundTransparency = 1
-	line.Font = Enum.Font.Gotham
-	line.TextSize = 11
-	line.TextColor3 = UI_THEME.textSecondary
-	line.TextXAlignment = Enum.TextXAlignment.Left
-	line.TextYAlignment = Enum.TextYAlignment.Center
-	line.ZIndex = 7
-	line.Parent = statusCard
-	bindText(line, key)
-end
-
-createStatusLine(1, "statusLine1")
-createStatusLine(2, "statusLine2")
-createStatusLine(3, "statusLine3")
-
-local footerLabel = Instance.new("TextLabel")
-footerLabel.AnchorPoint = Vector2.new(0, 1)
-footerLabel.Size = UDim2.new(1, 0, 0, 16)
-footerLabel.Position = UDim2.new(0, 0, 1, 0)
-footerLabel.BackgroundTransparency = 1
-footerLabel.Font = Enum.Font.Gotham
-footerLabel.TextSize = 12
-footerLabel.TextColor3 = UI_THEME.textSubtle
-footerLabel.TextXAlignment = Enum.TextXAlignment.Left
-footerLabel.TextYAlignment = Enum.TextYAlignment.Center
-footerLabel.ZIndex = 6
-footerLabel.Parent = bottomTextHolder
-bindText(footerLabel, "footer")
-
-local rejoinButton = Instance.new("TextButton")
-rejoinButton.AnchorPoint = Vector2.new(1, 1)
-rejoinButton.Position = UDim2.new(1, -18, 1, -10)
-rejoinButton.Size = UDim2.fromOffset(180, 36)
-rejoinButton.BackgroundColor3 = UI_THEME.buttonPrimary
-rejoinButton.BorderSizePixel = 0
-rejoinButton.AutoButtonColor = false
-rejoinButton.Font = Enum.Font.GothamBold
-rejoinButton.TextSize = 13
-rejoinButton.TextColor3 = UI_THEME.buttonPrimaryText
-rejoinButton.ZIndex = 7
-rejoinButton.Parent = infoCard
-Instance.new("UICorner", rejoinButton).CornerRadius = UDim.new(0, 14)
-bindText(rejoinButton, "rejoin")
-
-local statusHint = Instance.new("TextLabel")
-statusHint.AnchorPoint = Vector2.new(0, 0)
-statusHint.Size = UDim2.new(1, 0, 0, 16)
-statusHint.Position = UDim2.fromOffset(0, 0)
-statusHint.BackgroundTransparency = 1
-statusHint.Font = Enum.Font.Gotham
-statusHint.TextSize = 11
-statusHint.TextColor3 = UI_THEME.textMutedSoft
-statusHint.TextXAlignment = Enum.TextXAlignment.Left
-statusHint.TextYAlignment = Enum.TextYAlignment.Center
-statusHint.TextWrapped = false
-statusHint.ZIndex = 6
-statusHint.Parent = bottomTextHolder
-bindText(statusHint, "closeHint")
-
-local function tweenButton(button, background, textColor)
-	if hoverTweens[button] then
-		hoverTweens[button]:Cancel()
-	end
-	local tween = TweenService:Create(button, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-		BackgroundColor3 = background,
-		TextColor3 = textColor,
-	})
-	hoverTweens[button] = tween
-	tween:Play()
-end
-
-local function buildLangButton(lang)
-	local button = Instance.new("TextButton")
-	button.Size = UDim2.fromOffset(86, 34)
-	button.BackgroundColor3 = UI_THEME.langButton
-	button.BorderSizePixel = 0
-	button.AutoButtonColor = false
-	button.Font = Enum.Font.GothamBold
-	button.TextSize = 12
-	button.Text = LANGUAGE_LABELS[lang] or lang
-	button.TextColor3 = UI_THEME.textLang
-	button.ZIndex = 8
-	button.Parent = langHolder
-	Instance.new("UICorner", button).CornerRadius = UDim.new(0, 10)
-	langButtons[lang] = button
-
-	trackConnection(button.MouseEnter:Connect(function()
-		if lang ~= currentLanguage then
-			tweenButton(button, UI_THEME.langButtonHover, UI_THEME.textPrimary)
-		end
-	end))
-	trackConnection(button.MouseLeave:Connect(function()
-		refreshTexts()
-	end))
-	trackConnection(button.MouseButton1Click:Connect(function()
-		currentLanguage = lang
-		saveLanguage(lang)
-		refreshTexts()
-	end))
-end
-
-buildLangButton("en")
-buildLangButton("vi")
-buildLangButton("jp")
-
-trackConnection(closeButton.MouseEnter:Connect(function()
-	tweenButton(closeButton, UI_THEME.buttonSecondaryHover, UI_THEME.textOnDark)
-end))
-trackConnection(closeButton.MouseLeave:Connect(function()
-	tweenButton(closeButton, UI_THEME.buttonSecondary, UI_THEME.textPrimary)
-end))
-trackConnection(rejoinButton.MouseEnter:Connect(function()
-	tweenButton(rejoinButton, UI_THEME.buttonPrimaryHover, UI_THEME.buttonPrimaryText)
-end))
-trackConnection(rejoinButton.MouseLeave:Connect(function()
-	tweenButton(rejoinButton, UI_THEME.buttonPrimary, UI_THEME.buttonPrimaryText)
-end))
-trackConnection(discordButton.MouseEnter:Connect(function()
-	tweenButton(discordButton, UI_THEME.buttonPrimaryHover, UI_THEME.buttonPrimaryText)
-end))
-trackConnection(discordButton.MouseLeave:Connect(function()
-	tweenButton(discordButton, UI_THEME.buttonPrimary, UI_THEME.buttonPrimaryText)
-end))
-
-local function notifyButton(button, textKey, duration)
-	local originalText = tr(textKey == "rejoinFailed" and "rejoin" or "close")
-	local temporary = tr(textKey)
-	button.Text = temporary
-	task.delay(duration or 1.2, function()
-		if button and button.Parent then
-			if button == rejoinButton then
-				button.Text = tr("rejoin")
-			elseif button == closeButton then
-				button.Text = tr("close")
-			else
-				button.Text = originalText
-			end
-		end
+closeButton.Activated:Connect(function()
+	local shrink = TweenService:Create(scale, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Scale = 0.92})
+	local fadePanel = TweenService:Create(panel, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {BackgroundTransparency = 1})
+	local fadeShadow = TweenService:Create(panelShadow, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {ImageTransparency = 1})
+	shrink:Play()
+	fadePanel:Play()
+	fadeShadow:Play()
+	shrink.Completed:Connect(function()
+		screenGui:Destroy()
 	end)
-end
+end)
 
-trackConnection(closeButton.MouseButton1Click:Connect(function()
-	screenGui:Destroy()
-end))
+UserInputService:GetPropertyChangedSignal("TouchEnabled"):Connect(function()
+	mobileHint.Text = UserInputService.TouchEnabled and "Thiết bị: Mobile" or "Thiết bị: Desktop"
+end)
 
-trackConnection(rejoinButton.MouseButton1Click:Connect(function()
-	rejoinButton.Text = tr("rejoining")
-	task.delay(0.1, function()
-		if screenGui and screenGui.Parent then
-			screenGui:Destroy()
-		elseif rejoinButton and rejoinButton.Parent then
-			rejoinButton.Text = tr("rejoinFailed")
-			task.delay(1.3, function()
-				if rejoinButton and rejoinButton.Parent then
-					rejoinButton.Text = tr("rejoin")
-				end
-			end)
-		end
-	end)
-end))
-
-trackConnection(discordButton.MouseButton1Click:Connect(function()
-	local copied = copyToClipboard(DISCORD_DM_URL)
-	discordButton.Text = tr(copied and "discordCopied" or "discordCopyFailed")
-	task.delay(1.4, function()
-		if discordButton and discordButton.Parent then
-			discordButton.Text = tr("discordCopy")
-		end
-	end)
-end))
-
-for index = 1, AMBIENT_COUNT do
-	local dot = Instance.new("Frame")
-	dot.AnchorPoint = Vector2.new(0.5, 0.5)
-	dot.Size = UDim2.fromOffset(math.random(40, 120), math.random(40, 120))
-	dot.BackgroundColor3 = (index % 2 == 0) and UI_THEME.ambientSecondary or UI_THEME.ambientPrimary
-	dot.BackgroundTransparency = 0.9
-	dot.BorderSizePixel = 0
-	dot.Position = UDim2.new(math.random(), 0, math.random(), 0)
-	dot.Parent = ambientLayer
-	Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
-	ambientDots[index] = {
-		object = dot,
-		baseX = math.random(),
-		baseY = math.random(),
-		radius = math.random(8, 24) / 100,
-		speed = math.random(8, 20) / 10,
-		phase = math.random() * math.pi * 2,
-	}
-end
-
-local function randomDigitText()
-	local length = math.random(1, 3)
-	local out = table.create(length)
-	for i = 1, length do
-		local n = math.random(1, #digitPool)
-		out[i] = digitPool:sub(n, n)
-	end
-	return table.concat(out)
-end
-
-local function respawnDigit(state, initial)
-	state.x = math.random(6, 94) / 100
-	state.y = initial and (math.random(0, 100) / 100) or (-0.16 - math.random() * 0.24)
-	state.speed = math.random(18, 45) / 1000
-	state.drift = (math.random() - 0.5) * 0.08
-	state.size = math.random(10, 18)
-	state.alpha = math.random(45, 72) / 100
-	state.object.Text = randomDigitText()
-	state.object.TextSize = state.size
-	state.object.TextTransparency = state.alpha
-end
-
-for i = 1, DIGIT_COUNT do
-	local label = Instance.new("TextLabel")
-	label.AnchorPoint = Vector2.new(0.5, 0.5)
-	label.BackgroundTransparency = 1
-	label.Size = UDim2.fromOffset(28, 18)
-	label.Font = Enum.Font.Code
-	label.TextColor3 = UI_THEME.digit
-	label.TextYAlignment = Enum.TextYAlignment.Center
-	label.TextStrokeTransparency = 1
-	label.TextTransparency = 0.94
-	label.ZIndex = 1
-	label.Parent = digitLayer
-	digitLabels[i] = {
-		object = label,
-	}
-	respawnDigit(digitLabels[i], true)
-end
-
-setZIndexRecursive(creatorCard, 5)
-setZIndexRecursive(infoCard, 5)
-creatorTitle.ZIndex = 6
-creatorSubtitle.ZIndex = 6
-creatorUser.ZIndex = 6
-creatorTag.ZIndex = 6
-creatorBadge.ZIndex = 6
-avatarWrap.ZIndex = 6
-avatarImage.ZIndex = 7
-badge.ZIndex = 6
-maintenanceTitle.ZIndex = 6
-maintenanceBody.ZIndex = 6
-maintenanceNote.ZIndex = 6
-statusCard.ZIndex = 6
-statusTitle.ZIndex = 7
-footerLabel.ZIndex = 6
-statusHint.ZIndex = 6
-rejoinButton.ZIndex = 7
-bottomTextHolder.ZIndex = 6
-
-local function updateLayout()
-	local camera = workspace.CurrentCamera
-	local viewport = camera and camera.ViewportSize or Vector2.new(1280, 720)
-	local safeWidth = math.max(viewport.X - 40, 240)
-	local safeHeight = math.max(viewport.Y - 60, 180)
-	local scaleX = safeWidth / BASE_MAIN_WIDTH
-	local scaleY = safeHeight / BASE_MAIN_HEIGHT
-	mainScale.Scale = math.min(scaleX, scaleY, 1)
-
-	header.Size = UDim2.new(1, -24, 0, 54)
-	contentHolder.Position = UDim2.fromOffset(14, 74)
-	contentHolder.Size = UDim2.new(1, -28, 1, -92)
-	titleLabel.Size = UDim2.new(1, -404, 0, 26)
-	subtitleLabel.Size = UDim2.new(1, -404, 0, 18)
-	langHolder.AnchorPoint = Vector2.new(1, 0)
-	langHolder.Position = UDim2.new(1, -104, 0, 0)
-	langHolder.Size = UDim2.fromOffset(268, 34)
-	closeButton.Position = UDim2.new(1, 0, 0, 2)
-	fitWindowTitle()
-
-	contentLayout.FillDirection = Enum.FillDirection.Horizontal
-	creatorCard.Size = UDim2.fromOffset(252, 320)
-	infoCard.Size = UDim2.fromOffset(BASE_MAIN_WIDTH - 294, 320)
-	avatarWrap.Position = UDim2.new(0.5, -64, 0, 72)
-	creatorTitle.TextXAlignment = Enum.TextXAlignment.Center
-	creatorTitle.Position = UDim2.fromOffset(12, 14)
-	creatorTitle.Size = UDim2.new(1, -24, 0, 26)
-	creatorSubtitle.TextXAlignment = Enum.TextXAlignment.Center
-	creatorSubtitle.Position = UDim2.fromOffset(12, 40)
-	creatorSubtitle.Size = UDim2.new(1, -24, 0, 18)
-	creatorUser.TextXAlignment = Enum.TextXAlignment.Center
-	creatorUser.Position = UDim2.fromOffset(13, 204)
-	creatorUser.Size = UDim2.new(1, -26, 0, 22)
-	creatorTag.TextXAlignment = Enum.TextXAlignment.Center
-	creatorTag.Position = UDim2.fromOffset(13, 226)
-	creatorTag.Size = UDim2.new(1, -26, 0, 18)
-	creatorUser.TextYAlignment = Enum.TextYAlignment.Center
-	creatorTag.TextYAlignment = Enum.TextYAlignment.Center
-	creatorBadge.Position = UDim2.new(0.5, -71, 1, -72)
-	discordButton.Position = UDim2.new(0.5, -71, 1, -38)
-
-	maintenanceTitle.Size = UDim2.new(1, -36, 0, 48)
-	maintenanceBody.Position = UDim2.fromOffset(18, 114)
-	maintenanceBody.Size = UDim2.new(1, -36, 0, 40)
-	maintenanceNote.Position = UDim2.fromOffset(18, 158)
-	maintenanceNote.Size = UDim2.new(1, -36, 0, 28)
-	statusCard.Position = UDim2.fromOffset(18, 196)
-	statusCard.Size = UDim2.new(1, -36, 0, 74)
-	bottomTextHolder.Size = UDim2.new(1, -228, 0, 34)
-	bottomTextHolder.Position = UDim2.new(0, 18, 1, -10)
-	rejoinButton.Position = UDim2.new(1, -18, 1, -10)
-	rejoinButton.Size = UDim2.fromOffset(180, 36)
-	rejoinButton.TextSize = 13
-	statusHint.Visible = true
+if workspace.CurrentCamera then
+	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateLayout)
 end
 
 updateLayout()
-
-trackConnection(screenGui:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateLayout))
-local camera = workspace.CurrentCamera
-if camera then
-	trackConnection(camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateLayout))
-end
-
-local timeElapsed = 0
-trackConnection(RunService.RenderStepped:Connect(function(dt)
-	timeElapsed = timeElapsed + dt
-	rootGradient.Rotation = 0
-	mainStroke.Transparency = 0.12
-	creatorStroke.Transparency = 0.1
-	infoStroke.Transparency = 0.08
-
-	for _, state in ipairs(digitLabels) do
-		if SHOW_DIGIT_EFFECT and digitLayer.Visible then
-			state.y = state.y + state.speed
-			state.x = state.x + (math.sin(timeElapsed + state.y * 9) * state.drift * dt * 18)
-			if state.y > 1.16 then
-				respawnDigit(state, false)
-			end
-			state.object.Visible = true
-			state.object.Position = UDim2.fromScale(state.x, state.y)
-		else
-			state.object.Visible = false
-		end
-	end
-end))
-
-refreshTexts()
-
